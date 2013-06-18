@@ -32,8 +32,6 @@ public class CopyAndTranslateActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_copy);
-
-        //ClipboardManager cm = (ClipboardManager) this.getSystemService(CLIPBOARD_SERVICE);
         
         String url = String.format(getString(R.string.translate_url), this.sourceLang, this.desLang, this.text);
         new NetworkFactory(url, NetworkFactory.GET).start();
