@@ -7,6 +7,8 @@ import com.imrd.copy.R;
 import com.imrd.copy.util.LogProcessUtil;
 
 import android.app.Service;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +42,11 @@ public static final String TAG = UpdateService.class.getSimpleName();
 		Log.d(TAG, "onStartService()");
 		
 		ClipboardManager cm = (ClipboardManager) this.getSystemService(CLIPBOARD_SERVICE);
+		ClipData cd = cm.getPrimaryClip();
+		LogProcessUtil.LogPushD(TAG, "ClipData:" + cd.getItemAt(0) + "count:" + cd.getItemCount());
+		
+		ClipDescription cdc = cm.getPrimaryClipDescription();
+		LogProcessUtil.LogPushD(TAG, "ClipDescription:" + cdc.getMimeType(0) + "count:" + cdc.getMimeTypeCount());
 		
 		mToggleOverlay = new ToggleRecentAppsButton(UpdateService.this);
 		mToggleOverlay.setContentView(R.layout.copy);
