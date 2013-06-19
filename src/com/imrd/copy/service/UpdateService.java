@@ -25,13 +25,16 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 public class UpdateService extends Service implements ICountService, TranslateAware {
 
@@ -40,11 +43,13 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 	private ToggleRecentAppsButton mToggleOverlay;
 	private int count;
 	private ServiceBinder serviceBinder = new ServiceBinder();
+	private Button mScaleText;
 	private EditText mCopyText;
 	private ClipboardManager cm;
 	private ClipData cd;
 	private ClipDescription cdc;
 	private String beforeWord = "";
+	float downXValue, downYValue;
 
 	private TranslateClient transClient;
 	
@@ -67,9 +72,16 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 
 		mToggleOverlay = new ToggleRecentAppsButton(UpdateService.this);
 		mToggleOverlay.setContentView(R.layout.copy);
+		mScaleText = (Button) mToggleOverlay.findViewById(R.id.scale_button);
+		mScaleText.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+
+			}
+		});
 		mCopyText = (EditText) mToggleOverlay.findViewById(R.id.copy_text);
 		mCopyText.setEnabled(true);
-		// mToggleRecent.clearColorFilter();
 		mCopyText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -77,7 +89,7 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 			}
 		});
 
-		// mCopyText.setOnTouchListener(mOnTouchListener);
+		mCopyText.setOnTouchListener(mOnTouchListener);
 		mToggleOverlay.show();
 	}
 
@@ -86,9 +98,9 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 		public void onPrimaryClipChanged() {
 			cd = cm.getPrimaryClip();
 			String nowWord = "";
-			try{
+			try {
 				nowWord = cd.getItemAt(0).getText().toString();
-			}catch(Exception e){
+			} catch (Exception e) {
 				nowWord = "";
 			}
 			if (beforeWord.equals(nowWord))
@@ -138,54 +150,52 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 		return super.onUnbind(intent);
 	}
 
-	private boolean isToogle = false;
 	private final OnTouchListener mOnTouchListener = new OnTouchListener() {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
+			LinearLayout.LayoutParams layout = (LinearLayout.LayoutParams) mCopyText
+					.getLayoutParams();
 
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-			} else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-				isToogle = true;
+				downXValue = event.getX();
+				downYValue = event.getY();
 			} else if (event.getAction() == MotionEvent.ACTION_UP) {
-				if (isToogle)
-					toggleRecentApps();
-				isToogle = false;
+				float currentX = event.getX();
+				float currentY = event.getY();
+
+				double sizeInX = Math.abs(downXValue - currentX);
+				double sizeInY = Math.abs(downYValue - currentY);
+				if (sizeInX > sizeInY) {
+					// you better swipe horizontally
+					LogProcessUtil.LogPushD(TAG, "Horizontally");
+					
+					if (downXValue < currentX) {
+						LogProcessUtil.LogPushD(TAG, "Right");
+						layout.width = layout.width-30;
+					}
+					if (downXValue > currentX) {
+						LogProcessUtil.LogPushD(TAG, "Left");
+						layout.width = layout.width+30;
+					}
+				} else {
+					// you better swipe vertically
+					LogProcessUtil.LogPushD(TAG, "Vertically");
+					if (downXValue < currentX) {
+						LogProcessUtil.LogPushD(TAG, "Down");
+						layout.height = layout.height+30;
+					}
+					if (downXValue > currentX) {
+						LogProcessUtil.LogPushD(TAG, "Up");
+						layout.height = layout.height-30;
+					}
+				}
+				
+				mCopyText.setLayoutParams(layout);
 			}
 
 			return false;
 		}
 	};
-
-	private void toggleRecentApps() {
-		try {
-			String mServiceManagerString = "android.os.ServiceManager";
-			Class mServiceManager = Class.forName(mServiceManagerString);
-
-			IBinder localIBinder = (IBinder) mServiceManager.getMethod(
-					"getService", new Class[] { String.class }).invoke(
-					mServiceManager, new Object[] { "statusbar" });
-			Class iStatusBarService = Class
-					.forName("com.android.internal.statusbar.IStatusBarService");
-			Class statusBarInterface = iStatusBarService.getClasses()[0];
-			Object asInterface = statusBarInterface.getMethod("asInterface",
-					new Class[] { IBinder.class }).invoke(null,
-					new Object[] { localIBinder });
-			Method toggleRecentApps = statusBarInterface.getMethod(
-					"toggleRecentApps", new Class[0]);
-			toggleRecentApps.invoke(asInterface, new Object[0]);
-			// finish();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
 
 	public class ToggleRecentAppsButton {
 		private final Context mContext;
