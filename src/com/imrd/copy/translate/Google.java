@@ -9,28 +9,27 @@ public class Google {
 	public String server_time;
 	
 	public class Sentences{
-		String trans;
-		String orig;
-		String translit;
-		String src_translit;
+		public String trans;
+		public String orig;
+		public String translit;
+		public String src_translit;
 		
 	}
 	
 	public class Dict{
-		String pos;
-		List<String> terms;
-		List<Entry> entry;
+		public String pos;
+		public List<String> terms;
+		public List<Entry> entry;
 		
 		public class Entry{
-			String word;
-			List<String> reverse_translation;
-			String score;
+			public String word;
+			public List<String> reverse_translation;
+			public String score;
 		}
 		
 	}
 	
 	public Google() {
-		// TODO Auto-generated constructor stub
 	}
 	
 }
