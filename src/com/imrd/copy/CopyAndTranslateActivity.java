@@ -44,10 +44,12 @@ public class CopyAndTranslateActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_copy);
 
+		/*
 		String url = String.format(getString(R.string.translate_url),
 				this.sourceLang, this.desLang, this.text);
 		new NetworkFactory(url, NetworkFactory.GET).start();
-
+		 */
+		
 		final Intent intent = new Intent(CopyAndTranslateActivity.this,
 				UpdateService.class);
 		// startService(intent);
@@ -131,7 +133,6 @@ public class CopyAndTranslateActivity extends Activity {
 		}
 
 		public void onServiceDisconnected(ComponentName name) {
-			// TODO Auto-generated method stub
 			countService = null;
 		}
 

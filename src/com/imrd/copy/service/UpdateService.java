@@ -1,13 +1,9 @@
 package com.imrd.copy.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import com.imrd.copy.R;
-import com.imrd.copy.dict.StarDict;
 import com.imrd.copy.translate.Google;
-import com.imrd.copy.translate.TranslateAware;
 import com.imrd.copy.translate.TranslateClient;
+import com.imrd.copy.translate.TranslateClient.TranslateAware;
 import com.imrd.copy.util.LogProcessUtil;
 import android.app.Service;
 import android.content.ClipData;
@@ -16,10 +12,13 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -36,7 +35,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-public class UpdateService extends Service implements ICountService, TranslateAware {
+public class UpdateService extends Service implements ICountService,
+		TranslateAware {
 
 	public static final String TAG = UpdateService.class.getSimpleName();
 
@@ -52,14 +52,14 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 	float downXValue, downYValue;
 
 	private TranslateClient transClient;
-	
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		Log.d(TAG, "onStartService()");
 
-		transClient = TranslateClient.getInstance();
-		
+		transClient = TranslateClient.newInstance();
+
 		cm = (ClipboardManager) this.getSystemService(CLIPBOARD_SERVICE);
 		cm.addPrimaryClipChangedListener(mPrimaryChangeListener);
 		cd = cm.getPrimaryClip();
@@ -109,23 +109,37 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 			LogProcessUtil.LogPushD(TAG, "ClipData:" + cd.getItemAt(0)
 					+ "count:" + cd.getItemCount());
 
-			if (nowWord != null || nowWord.trim().equals("")) {
+			if (!TextUtils.isEmpty(nowWord)) {
 				beforeWord = nowWord;
 
-				transClient.requestTranslate(nowWord, UpdateService.this);
-				
+				if (isNetOpen(UpdateService.this)) {
+					transClient.requestTranslate(nowWord, UpdateService.this);
+				} else {
+					transClient.requestTranslateLocal(nowWord,
+							UpdateService.this);
+				}
 			}
+
 		}
 	};
 
+	/**
+	 * a handler to process text update after translated.
+	 */
 	private Handler serviceUIUpdated = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			super.handleMessage(msg);
 
-			String nowWord = (String) msg.obj;
-			//mCopyText.setText(new StarDict().getExplanation2(nowWord));
-			mCopyText.setText(nowWord);
+			String text = "";
+			if (msg.obj instanceof String) {
+				text = (String) msg.obj;
+			} else if (msg.obj instanceof Google) {
+				Google model = (Google) msg.obj;
+				text = model.sentences.get(0).trans;
+			}
+
+			mCopyText.setText(text);
 		}
 	};
 
@@ -168,28 +182,28 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 				if (sizeInX > sizeInY) {
 					// you better swipe horizontally
 					LogProcessUtil.LogPushD(TAG, "Horizontally");
-					
+
 					if (downXValue < currentX) {
 						LogProcessUtil.LogPushD(TAG, "Right");
-						layout.width = layout.width-30;
+						layout.width = layout.width - 30;
 					}
 					if (downXValue > currentX) {
 						LogProcessUtil.LogPushD(TAG, "Left");
-						layout.width = layout.width+30;
+						layout.width = layout.width + 30;
 					}
 				} else {
 					// you better swipe vertically
 					LogProcessUtil.LogPushD(TAG, "Vertically");
 					if (downXValue < currentX) {
 						LogProcessUtil.LogPushD(TAG, "Down");
-						layout.height = layout.height+30;
+						layout.height = layout.height + 30;
 					}
 					if (downXValue > currentX) {
 						LogProcessUtil.LogPushD(TAG, "Up");
-						layout.height = layout.height-30;
+						layout.height = layout.height - 30;
 					}
 				}
-				
+
 				mCopyText.setLayoutParams(layout);
 			}
 
@@ -337,17 +351,30 @@ public class UpdateService extends Service implements ICountService, TranslateAw
 		return count;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.imrd.copy.translate.TranslateAware#receiveTranslateText(java.lang.Object)
+	/**
+	 * @param context
+	 * @return network on/off
+	 */
+	private static boolean isNetOpen(Context context) {
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		if ((ni != null) && ni.isConnected()) {
+			return ni.isConnected();
+		} else {
+			return false;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.imrd.copy.translate.TranslateClient.TranslateAware#receiveTranslateText(java.lang.Object)
 	 */
 	@Override
 	public void receiveTranslateText(Object transobj) {
-		
-		Google model = (Google)transobj;
-		
-		String obj = model.sentences.get(0).trans;
 
-		serviceUIUpdated.sendMessage(serviceUIUpdated.obtainMessage(1, obj));
-		
+		serviceUIUpdated.sendMessage(serviceUIUpdated.obtainMessage(1, transobj));
+
 	}
 }

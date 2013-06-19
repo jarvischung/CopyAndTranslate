@@ -2,6 +2,12 @@ package com.imrd.copy.translate;
 
 import java.util.List;
 
+/**
+ * a model class for gson parser
+ * 
+ * @author weikunlu
+ *
+ */
 public class Google {
 	public List<Sentences> sentences;
 	public List<Dict> dict;

@@ -6,6 +6,7 @@ import java.net.URLEncoder;
 import android.util.Log;
 
 import com.google.gson.GsonBuilder;
+import com.imrd.copy.dict.StarDict;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
@@ -20,10 +21,14 @@ public class TranslateClient {
 	static final String TW = "zh-TW";
 	static final String EN = "en";
 	
+	public interface TranslateAware {
+		public void receiveTranslateText(Object transobj);
+	}
+	
 	private TranslateClient() {
 	}
 	
-	public static TranslateClient getInstance(){
+	public static TranslateClient newInstance(){
 		if(client==null){
 			client = new TranslateClient();
 		}
@@ -56,6 +61,12 @@ public class TranslateClient {
 			
 			e.printStackTrace();
 		}
+		
+	}
+	
+	public void requestTranslateLocal(String text, final TranslateAware callback){
+		
+		callback.receiveTranslateText(new StarDict().getExplanation2(text));
 		
 	}
 	
