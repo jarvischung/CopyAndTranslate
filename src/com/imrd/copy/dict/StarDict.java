@@ -35,6 +35,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import com.imrd.copy.CopyAndTranslateActivity;
+
 class Location {
 	public int offset;
 	public int size;
@@ -49,7 +51,8 @@ public class StarDict {
 	public String last_error = "";
 
 	public StarDict() {
-		this("/mnt/sdcard/recitedictcn/langdao_ec_gb");
+		this(CopyAndTranslateActivity.defaultSDCardPath + CopyAndTranslateActivity.defaultDictName);
+		//this("/data/data/com.imrd.copy/files/langdao/langdao_ec_gb");
 	}
 
 	/**
@@ -290,15 +293,5 @@ public class StarDict {
 			e.printStackTrace();
 		}
 		return 0;
-	}
-
-	public static void main(String[] args) {
-		StarDict dict = new StarDict("g:\\stardict\\dict");
-		System.out.println(dict.getVersion());
-		Location l = new Location();
-		String w = dict.getWord(400000, l);
-		System.out.println(w);
-		System.out.println(dict.getExplanation(w));
-		System.out.println(dict.getExplanation("this"));
 	}
 }
