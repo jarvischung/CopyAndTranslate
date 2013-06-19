@@ -48,6 +48,10 @@ public class StarDict {
 	String dictname;
 	public String last_error = "";
 
+	public StarDict() {
+		this("/mnt/sdcard/recitedictcn/langdao_ec_gb");
+	}
+
 	/**
 	 * 
 	 * @param dictname
@@ -56,7 +60,7 @@ public class StarDict {
 		try {
 			this.dictname = dictname;
 			this.index = new RandomAccessFile(dictname + ".idx", "r");
-			this.dz = new DictZipFile(dictname + ".dict.dz");
+			this.dz = new DictZipFile(dictname + ".dz");
 			this.yaindex = new RandomAccessFile(dictname + ".yaidx", "r");
 			// this.dz.runtest();
 		} catch (FileNotFoundException e) {
@@ -166,6 +170,84 @@ public class StarDict {
 		}
 		return w + "\n" + exp;
 		// */
+	}
+
+	/**
+	 * 
+	 * @param word
+	 * @return the explanation of the word
+	 */
+	public String getExplanation2(String word) {
+		int i = 0;
+		int max = getWordNum();
+		String w = "";
+		int mid = 0;
+		Location l = new Location();
+		String exp = null;
+		int cmp = 0;
+
+		while (i <= max) {
+			mid = (i + max) / 2;
+			w = getWord(mid, l);
+			/*
+			 * use search algorithm used by stardict,otherwise we will found the
+			 * wrong word, fortitude.zhang, 2011/12/26
+			 */
+			cmp = stardictStrcmp(w, word);
+			if (cmp > 0) {
+				max = mid - 1;
+			} else if (cmp < 0) {
+				i = mid + 1;
+			} else {
+				break;
+			}
+		}
+
+		// get explanation
+		byte[] buffer = new byte[l.size];
+		this.dz.seek(l.offset);
+		try {
+			this.dz.read(buffer, l.size);
+		} catch (Exception e) {
+			last_error = e.toString();
+			buffer = null;
+			exp = e.toString();
+		}
+
+		try {
+			if (buffer == null) {
+				exp = "Error when reading data\n" + exp;
+			} else {
+				exp = new String(buffer, "UTF8");
+			}
+		} catch (Exception e) {
+			last_error = e.toString();
+			e.printStackTrace();
+		}
+		return w + "\n" + exp;
+		// return mid+"\n"+l.offset+exp+l.size;
+		// */
+	}
+
+	/*
+	 * stardict_strcmp, we need this function gint a=g_ascii_strcasecmp(s1, s2);
+	 * if (a == 0) return strcmp(s1, s2); else return a; fortitude.zhang,
+	 * 2011/12/26
+	 */
+	private int stardictStrcmp(String str1, String str2) {
+		int a;
+
+		/*
+		 * Java doc: a negative integer, zero, or a positive integer as the
+		 * specified String is greater than, equal to, or less than this String,
+		 * ignoring case considerations.
+		 */
+		a = str1.compareToIgnoreCase(str2);
+		if (0 == a) {
+			a = str1.compareTo(str2);
+		}
+
+		return a;
 	}
 
 	/**

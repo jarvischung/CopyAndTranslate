@@ -4,17 +4,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.imrd.copy.R;
+import com.imrd.copy.dict.StarDict;
 import com.imrd.copy.util.LogProcessUtil;
-
 import android.app.Service;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
+import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,62 +31,107 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
-public class UpdateService extends Service implements ICountService{
-	
-public static final String TAG = UpdateService.class.getSimpleName();
-	
+public class UpdateService extends Service implements ICountService {
+
+	public static final String TAG = UpdateService.class.getSimpleName();
+
 	private ToggleRecentAppsButton mToggleOverlay;
 	private int count;
 	private ServiceBinder serviceBinder = new ServiceBinder();
+	private EditText mCopyText;
+	private ClipboardManager cm;
+	private ClipData cd;
+	private ClipDescription cdc;
+	private String beforeWord = "";
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		Log.d(TAG, "onStartService()");
-		
-		ClipboardManager cm = (ClipboardManager) this.getSystemService(CLIPBOARD_SERVICE);
-		ClipData cd = cm.getPrimaryClip();
-		LogProcessUtil.LogPushD(TAG, "ClipData:" + cd.getItemAt(0) + "count:" + cd.getItemCount());
-		
-		ClipDescription cdc = cm.getPrimaryClipDescription();
-		LogProcessUtil.LogPushD(TAG, "ClipDescription:" + cdc.getMimeType(0) + "count:" + cdc.getMimeTypeCount());
-		
+
+		cm = (ClipboardManager) this.getSystemService(CLIPBOARD_SERVICE);
+		cm.addPrimaryClipChangedListener(mPrimaryChangeListener);
+		cd = cm.getPrimaryClip();
+		// LogProcessUtil.LogPushD(TAG, "ClipData:" + cd.getItemAt(0) + "count:"
+		// + cd.getItemCount());
+
+		cdc = cm.getPrimaryClipDescription();
+		// LogProcessUtil.LogPushD(TAG, "ClipDescription:" + cdc.getMimeType(0)
+		// + "count:" + cdc.getMimeTypeCount());
+
 		mToggleOverlay = new ToggleRecentAppsButton(UpdateService.this);
 		mToggleOverlay.setContentView(R.layout.copy);
-		EditText mCopyText = (EditText) mToggleOverlay.findViewById(R.id.copy_text);
+		mCopyText = (EditText) mToggleOverlay.findViewById(R.id.copy_text);
 		mCopyText.setEnabled(true);
-		//mToggleRecent.clearColorFilter();
-		mCopyText.setOnClickListener(new View.OnClickListener(){
+		// mToggleRecent.clearColorFilter();
+		mCopyText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				//run translate
+				// run translate
 			}
 		});
-		
-		//mCopyText.setOnTouchListener(mOnTouchListener);
+
+		// mCopyText.setOnTouchListener(mOnTouchListener);
 		mToggleOverlay.show();
 	}
-	
+
+	ClipboardManager.OnPrimaryClipChangedListener mPrimaryChangeListener = new ClipboardManager.OnPrimaryClipChangedListener() {
+		@Override
+		public void onPrimaryClipChanged() {
+			cd = cm.getPrimaryClip();
+			String nowWord = "";
+			try{
+				nowWord = cd.getItemAt(0).getText().toString();
+			}catch(Exception e){
+				nowWord = "";
+			}
+			if (beforeWord.equals(nowWord))
+				return;
+
+			LogProcessUtil.LogPushD(TAG, "ClipData:" + cd.getItemAt(0)
+					+ "count:" + cd.getItemCount());
+
+			if (nowWord != null || nowWord.trim().equals("")) {
+				beforeWord = nowWord;
+				Message message;
+				String obj = nowWord;
+				message = serviceUIUpdated.obtainMessage(1, obj);
+				serviceUIUpdated.sendMessage(message);
+			}
+		}
+	};
+
+	private Handler serviceUIUpdated = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);
+
+			String nowWord = (String) msg.obj;
+			mCopyText.setText(new StarDict().getExplanation2(nowWord));
+		}
+	};
+
 	public class ServiceBinder extends Binder implements ICountService {
-		 
-        public int getCount() {
-        	LogProcessUtil.LogPushD(TAG, "ServiceBinder:" + count);
-            return count;
-        }
-         
-    }
+
+		public int getCount() {
+			LogProcessUtil.LogPushD(TAG, "ServiceBinder:" + count);
+			return count;
+		}
+
+	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return serviceBinder;
 	}
-	
+
 	@Override
-    public boolean onUnbind(Intent intent) {
+	public boolean onUnbind(Intent intent) {
 		mToggleOverlay.hide();
-        return super.onUnbind(intent);
-    }
-	
+		cm.removePrimaryClipChangedListener(mPrimaryChangeListener);
+		return super.onUnbind(intent);
+	}
+
 	private boolean isToogle = false;
 	private final OnTouchListener mOnTouchListener = new OnTouchListener() {
 		@Override
@@ -93,7 +141,7 @@ public static final String TAG = UpdateService.class.getSimpleName();
 			} else if (event.getAction() == MotionEvent.ACTION_MOVE) {
 				isToogle = true;
 			} else if (event.getAction() == MotionEvent.ACTION_UP) {
-				if(isToogle)
+				if (isToogle)
 					toggleRecentApps();
 				isToogle = false;
 			}
@@ -101,20 +149,25 @@ public static final String TAG = UpdateService.class.getSimpleName();
 			return false;
 		}
 	};
-	
-	private void toggleRecentApps(){
+
+	private void toggleRecentApps() {
 		try {
 			String mServiceManagerString = "android.os.ServiceManager";
 			Class mServiceManager = Class.forName(mServiceManagerString);
-		
-			IBinder localIBinder = (IBinder)mServiceManager.getMethod(
-					"getService", new Class[] { String.class }).invoke(mServiceManager, new Object[] { "statusbar" });
-			Class iStatusBarService = Class.forName("com.android.internal.statusbar.IStatusBarService");
+
+			IBinder localIBinder = (IBinder) mServiceManager.getMethod(
+					"getService", new Class[] { String.class }).invoke(
+					mServiceManager, new Object[] { "statusbar" });
+			Class iStatusBarService = Class
+					.forName("com.android.internal.statusbar.IStatusBarService");
 			Class statusBarInterface = iStatusBarService.getClasses()[0];
-			Object asInterface = statusBarInterface.getMethod("asInterface", new Class[] { IBinder.class }).invoke(null, new Object[] { localIBinder });
-			Method toggleRecentApps = statusBarInterface.getMethod("toggleRecentApps", new Class[0]);
+			Object asInterface = statusBarInterface.getMethod("asInterface",
+					new Class[] { IBinder.class }).invoke(null,
+					new Object[] { localIBinder });
+			Method toggleRecentApps = statusBarInterface.getMethod(
+					"toggleRecentApps", new Class[0]);
 			toggleRecentApps.invoke(asInterface, new Object[0]);
-		    //finish();
+			// finish();
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
@@ -142,17 +195,18 @@ public static final String TAG = UpdateService.class.getSimpleName();
 			mWindowManager = (WindowManager) context
 					.getSystemService(Context.WINDOW_SERVICE);
 			mContentView = new SilentFrameLayout(context);
-			
+
 			mParams = new WindowManager.LayoutParams();
-			mParams.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+			mParams.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN
+					| WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 			mParams.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 			mParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
 			mParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
 			mParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
 			mParams.format = PixelFormat.TRANSLUCENT;
-			mParams.gravity |= Gravity.TOP | Gravity.CENTER;
+			mParams.gravity |= Gravity.TOP | Gravity.RIGHT;
 			setParams(mParams);
-			
+
 			mVisible = false;
 		}
 
@@ -223,7 +277,7 @@ public static final String TAG = UpdateService.class.getSimpleName();
 		public void setContentView(int layoutResId) {
 			final LayoutInflater inflater = LayoutInflater.from(mContext);
 			inflater.inflate(layoutResId, mContentView);
-			
+
 		}
 
 		public void setContentView(View content) {
@@ -239,9 +293,9 @@ public static final String TAG = UpdateService.class.getSimpleName();
 			return mContentView.findViewById(id);
 		}
 	}
-	
+
 	public interface ToggleRecentAppsButtonListener {
-		
+
 		public void onShow(ToggleRecentAppsButton overlay);
 
 		public void onHide(ToggleRecentAppsButton overlay);

@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+import com.imrd.copy.dict.StarDict;
 import com.imrd.copy.network.NetworkFactory;
 import com.imrd.copy.service.ICountService;
 import com.imrd.copy.service.UpdateService;
@@ -55,7 +56,8 @@ public class CopyAndTranslateActivity extends Activity {
 			}
         	
         });
-    	//this.getApplicationContext().bindService(intent, serviceConnection, BIND_AUTO_CREATE);
+
+        //LogProcessUtil.LogPushD(TAG, "Explanation:" + new StarDict().getExplanation("test") );
     }
     
     private ServiceConnection serviceConnection = new ServiceConnection() {
