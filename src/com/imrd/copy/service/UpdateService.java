@@ -5,12 +5,14 @@ import java.lang.reflect.Method;
 
 import com.imrd.copy.R;
 import com.imrd.copy.dict.StarDict;
+import com.imrd.copy.translate.Google;
+import com.imrd.copy.translate.TranslateAware;
+import com.imrd.copy.translate.TranslateClient;
 import com.imrd.copy.util.LogProcessUtil;
 import android.app.Service;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
-import android.content.ClipboardManager.OnPrimaryClipChangedListener;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -31,7 +33,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
-public class UpdateService extends Service implements ICountService {
+public class UpdateService extends Service implements ICountService, TranslateAware {
 
 	public static final String TAG = UpdateService.class.getSimpleName();
 
@@ -44,11 +46,15 @@ public class UpdateService extends Service implements ICountService {
 	private ClipDescription cdc;
 	private String beforeWord = "";
 
+	private TranslateClient transClient;
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		Log.d(TAG, "onStartService()");
 
+		transClient = TranslateClient.getInstance();
+		
 		cm = (ClipboardManager) this.getSystemService(CLIPBOARD_SERVICE);
 		cm.addPrimaryClipChangedListener(mPrimaryChangeListener);
 		cd = cm.getPrimaryClip();
@@ -93,10 +99,9 @@ public class UpdateService extends Service implements ICountService {
 
 			if (nowWord != null || nowWord.trim().equals("")) {
 				beforeWord = nowWord;
-				Message message;
-				String obj = nowWord;
-				message = serviceUIUpdated.obtainMessage(1, obj);
-				serviceUIUpdated.sendMessage(message);
+
+				transClient.requestTranslate(nowWord, UpdateService.this);
+				
 			}
 		}
 	};
@@ -107,7 +112,8 @@ public class UpdateService extends Service implements ICountService {
 			super.handleMessage(msg);
 
 			String nowWord = (String) msg.obj;
-			mCopyText.setText(new StarDict().getExplanation2(nowWord));
+			//mCopyText.setText(new StarDict().getExplanation2(nowWord));
+			mCopyText.setText(nowWord);
 		}
 	};
 
@@ -319,5 +325,19 @@ public class UpdateService extends Service implements ICountService {
 	@Override
 	public int getCount() {
 		return count;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.imrd.copy.translate.TranslateAware#receiveTranslateText(java.lang.Object)
+	 */
+	@Override
+	public void receiveTranslateText(Object transobj) {
+		
+		Google model = (Google)transobj;
+		
+		String obj = model.sentences.get(0).trans;
+
+		serviceUIUpdated.sendMessage(serviceUIUpdated.obtainMessage(1, obj));
+		
 	}
 }
