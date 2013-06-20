@@ -11,6 +11,7 @@ import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -30,10 +31,11 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 public class UpdateService extends Service implements ICountService,
 		TranslateAware {
@@ -43,15 +45,17 @@ public class UpdateService extends Service implements ICountService,
 	private ToggleRecentAppsButton mToggleOverlay;
 	private int count;
 	private ServiceBinder serviceBinder = new ServiceBinder();
-	private Button mScaleText;
+	private ImageButton mScaleButton;
 	private EditText mCopyText;
 	private ClipboardManager cm;
 	private ClipData cd;
 	private ClipDescription cdc;
 	private String beforeWord = "";
 	float downXValue, downYValue;
+	private boolean isShowText = true;
 
 	private TranslateClient transClient;
+	private int mScaleButtonEntryPosition[] = new int[4];
 
 	@Override
 	public void onCreate() {
@@ -72,16 +76,23 @@ public class UpdateService extends Service implements ICountService,
 
 		mToggleOverlay = new ToggleRecentAppsButton(UpdateService.this);
 		mToggleOverlay.setContentView(R.layout.copy);
-		mScaleText = (Button) mToggleOverlay.findViewById(R.id.scale_button);
-		mScaleText.setOnClickListener(new OnClickListener() {
+		mScaleButton = (ImageButton) mToggleOverlay.findViewById(R.id.scale_button);
+		getScaleButtonPosition();
+		mScaleButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-
+				if(isShowText)
+					mCopyText.setVisibility(View.GONE);
+				else
+					mCopyText.setVisibility(View.VISIBLE);
+				
+				isShowText = !isShowText;
 			}
 		});
 		mCopyText = (EditText) mToggleOverlay.findViewById(R.id.copy_text);
 		mCopyText.setEnabled(true);
+		mCopyText.setTextColor(Color.WHITE);
 		mCopyText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -89,8 +100,25 @@ public class UpdateService extends Service implements ICountService,
 			}
 		});
 
-		mCopyText.setOnTouchListener(mOnTouchListener);
+		//mCopyText.setOnTouchListener(mOnTouchListener);
 		mToggleOverlay.show();
+	}
+	
+	private void getScaleButtonPosition(){
+		mScaleButton.post(new Runnable() {
+			@Override
+			public void run() {
+				mScaleButton.getLocationOnScreen(mScaleButtonEntryPosition);
+				mScaleButtonEntryPosition[2] = mScaleButton.getWidth();
+				mScaleButtonEntryPosition[3] = mScaleButton.getHeight();
+				
+				/*RelativeLayout.LayoutParams layout = 
+						(RelativeLayout.LayoutParams) mCopyText.getLayoutParams();
+				layout.height = mScaleButtonEntryPosition[3];
+				mCopyText.setLayoutParams(layout);*/
+				mCopyText.setMinHeight(mScaleButtonEntryPosition[3]+15);
+			}
+		});
 	}
 
 	ClipboardManager.OnPrimaryClipChangedListener mPrimaryChangeListener = new ClipboardManager.OnPrimaryClipChangedListener() {
@@ -118,6 +146,9 @@ public class UpdateService extends Service implements ICountService,
 					transClient.requestTranslateLocal(nowWord,
 							UpdateService.this);
 				}
+				
+				mCopyText.setVisibility(View.VISIBLE);
+				isShowText = true;
 			}
 
 		}
@@ -167,7 +198,7 @@ public class UpdateService extends Service implements ICountService,
 	private final OnTouchListener mOnTouchListener = new OnTouchListener() {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			LinearLayout.LayoutParams layout = (LinearLayout.LayoutParams) mCopyText
+			RelativeLayout.LayoutParams layout = (RelativeLayout.LayoutParams) mCopyText
 					.getLayoutParams();
 
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -234,7 +265,7 @@ public class UpdateService extends Service implements ICountService,
 			mParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
 			mParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
 			mParams.format = PixelFormat.TRANSLUCENT;
-			mParams.gravity |= Gravity.TOP | Gravity.RIGHT;
+			mParams.gravity |= Gravity.RIGHT;
 			setParams(mParams);
 
 			mVisible = false;
