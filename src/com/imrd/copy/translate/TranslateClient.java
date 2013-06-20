@@ -58,8 +58,8 @@ public class TranslateClient {
 			});
 			
 		} catch (UnsupportedEncodingException e) {
-			
-			e.printStackTrace();
+			Log.w(TAG, "bad request: "+e.getMessage());
+			requestTranslateLocal(text, callback);
 		}
 		
 	}
