@@ -34,7 +34,6 @@ import android.view.accessibility.AccessibilityEvent;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 public class UpdateService extends Service implements ICountService,
@@ -92,7 +91,6 @@ public class UpdateService extends Service implements ICountService,
 		});
 		mCopyText = (EditText) mToggleOverlay.findViewById(R.id.copy_text);
 		mCopyText.setEnabled(true);
-		mCopyText.setTextColor(Color.WHITE);
 		mCopyText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -102,6 +100,14 @@ public class UpdateService extends Service implements ICountService,
 
 		//mCopyText.setOnTouchListener(mOnTouchListener);
 		mToggleOverlay.show();
+	}
+	
+	@Override
+	public void onDestroy() {
+		mToggleOverlay.hide();
+		cm.removePrimaryClipChangedListener(mPrimaryChangeListener);
+
+		super.onDestroy();
 	}
 	
 	private void getScaleButtonPosition(){

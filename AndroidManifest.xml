@@ -23,10 +23,18 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="com.imrd.copy.action"/>
             </intent-filter>
         </activity>
+        
+        <receiver android:name="com.imrd.copy.receiver.NotificationReceiver"
+            android:exported="true">
+		    <intent-filter>  
+		        <action android:name="com.imrd.copy.action.start"/>
+		        <action android:name="com.imrd.copy.action.clean"/>
+		    </intent-filter>  
+		</receiver>
         
         <service android:name="com.imrd.copy.service.UpdateService" />
     </application>

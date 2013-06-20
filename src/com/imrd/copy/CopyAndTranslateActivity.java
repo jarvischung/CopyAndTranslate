@@ -5,11 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import android.os.Bundle;
 import android.os.IBinder;
 import android.app.Activity;
-import android.content.ClipboardManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -19,9 +20,6 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-
-import com.imrd.copy.dict.StarDict;
-import com.imrd.copy.network.NetworkFactory;
 import com.imrd.copy.service.ICountService;
 import com.imrd.copy.service.UpdateService;
 import com.imrd.copy.util.LogProcessUtil;
@@ -33,7 +31,7 @@ public class CopyAndTranslateActivity extends Activity {
 	private String desLang = "zh-TW";
 	private String text = "Hello!!";
 	private boolean isRunService = false;
-	
+
 	public static String defaultSDCardPath = "/sdcard/copyandtranslate/langdao/";
 	public static String defaultDictName = "langdao_ec_gb";
 
@@ -45,11 +43,11 @@ public class CopyAndTranslateActivity extends Activity {
 		setContentView(R.layout.activity_copy);
 
 		/*
-		String url = String.format(getString(R.string.translate_url),
-				this.sourceLang, this.desLang, this.text);
-		new NetworkFactory(url, NetworkFactory.GET).start();
+		 * String url = String.format(getString(R.string.translate_url),
+		 * this.sourceLang, this.desLang, this.text); new NetworkFactory(url,
+		 * NetworkFactory.GET).start();
 		 */
-		
+
 		final Intent intent = new Intent(CopyAndTranslateActivity.this,
 				UpdateService.class);
 		// startService(intent);
@@ -69,7 +67,7 @@ public class CopyAndTranslateActivity extends Activity {
 					unbindService(serviceConnection);
 					isRunService = false;
 				}
-				
+
 				copyAssetsToSD();
 			}
 
@@ -77,7 +75,8 @@ public class CopyAndTranslateActivity extends Activity {
 
 		// LogProcessUtil.LogPushD(TAG, "Explanation:" + new
 		// StarDict().getExplanation("test") );
-		
+
+		createNotification();
 	}
 
 	private void copyAssetsToSD() {
@@ -88,20 +87,18 @@ public class CopyAndTranslateActivity extends Activity {
 			File f = new File(defaultSDCardPath);
 			f.mkdirs();
 		} catch (Exception e) {
-			LogProcessUtil.LogPushD("tag", "Failed to get asset file list.");
+			LogProcessUtil.LogPushD(TAG, "Failed to get asset file list.");
 			e.printStackTrace();
 		}
 		for (String filename : files) {
 			InputStream in = null;
 			OutputStream out = null;
 			try {
-				if (new File(defaultSDCardPath + filename)
-						.exists())
+				if (new File(defaultSDCardPath + filename).exists())
 					continue;
-				
+
 				in = assetManager.open("langdao/" + filename);
-				out = new FileOutputStream(defaultSDCardPath
-						+ filename);
+				out = new FileOutputStream(defaultSDCardPath + filename);
 				copyFile(in, out);
 				in.close();
 				in = null;
@@ -109,7 +106,7 @@ public class CopyAndTranslateActivity extends Activity {
 				out.close();
 				out = null;
 			} catch (IOException e) {
-				LogProcessUtil.LogPushD("tag", "Failed to copy asset file: "
+				LogProcessUtil.LogPushD(TAG, "Failed to copy asset file: "
 						+ filename);
 				e.printStackTrace();
 			}
@@ -138,11 +135,39 @@ public class CopyAndTranslateActivity extends Activity {
 
 	};
 
+	public void createNotification() {
+		Intent intent = new Intent("com.imrd.copy.action.start");
+		PendingIntent pIntentStart = PendingIntent.getBroadcast(this, 0, intent, 0);
+		
+		Intent intent2 = new Intent("com.imrd.copy.action.clean");
+		PendingIntent pIntentClean = PendingIntent.getBroadcast(this, 0, intent2, 0);
+
+		Notification noti = new Notification.Builder(this)
+				.setContentTitle("CopyAndTranslate").setContentText("Subject")
+				.setSmallIcon(R.drawable.ic_launcher).setContentIntent(pIntentStart)
+				.addAction(R.drawable.ic_launcher, "Start", pIntentStart)
+				.addAction(R.drawable.ic_launcher, "Clean", pIntentClean).build();
+		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		noti.flags |= Notification.FLAG_NO_CLEAR;
+
+		notificationManager.notify(0, noti);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		//IntentFilter intentFilter = new IntentFilter();
+		//intentFilter.addAction("com.imrd.copy.action");
+		//registerReceiver(new NotificationReceiver(), intentFilter);
+
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.copy_and_translate, menu);
 		return true;
 	}
-
 }
