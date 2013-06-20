@@ -20,6 +20,8 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+
+import com.imrd.copy.dict.StarDict;
 import com.imrd.copy.service.ICountService;
 import com.imrd.copy.service.UpdateService;
 import com.imrd.copy.util.LogProcessUtil;
@@ -41,13 +43,7 @@ public class CopyAndTranslateActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_copy);
-
-		/*
-		 * String url = String.format(getString(R.string.translate_url),
-		 * this.sourceLang, this.desLang, this.text); new NetworkFactory(url,
-		 * NetworkFactory.GET).start();
-		 */
-
+		
 		final Intent intent = new Intent(CopyAndTranslateActivity.this,
 				UpdateService.class);
 		// startService(intent);
