@@ -42,7 +42,7 @@ public class UpdateService extends Service implements ICountService,
 
 	public static final String TAG = UpdateService.class.getSimpleName();
 
-	private ToggleRecentAppsButton mToggleOverlay;
+	private ToggleCopyAndTranslateButton mToggleOverlay;
 	private int count;
 	private ServiceBinder serviceBinder = new ServiceBinder();
 	private ImageButton mScaleButton;
@@ -74,7 +74,7 @@ public class UpdateService extends Service implements ICountService,
 		// LogProcessUtil.LogPushD(TAG, "ClipDescription:" + cdc.getMimeType(0)
 		// + "count:" + cdc.getMimeTypeCount());
 
-		mToggleOverlay = new ToggleRecentAppsButton(UpdateService.this);
+		mToggleOverlay = new ToggleCopyAndTranslateButton(UpdateService.this);
 		mToggleOverlay.setContentView(R.layout.copy);
 		mScaleButton = (ImageButton) mToggleOverlay.findViewById(R.id.scale_button);
 		getScaleButtonPosition();
@@ -242,16 +242,16 @@ public class UpdateService extends Service implements ICountService,
 		}
 	};
 
-	public class ToggleRecentAppsButton {
+	public class ToggleCopyAndTranslateButton {
 		private final Context mContext;
 		private final WindowManager mWindowManager;
 		private final ViewGroup mContentView;
 		private final LayoutParams mParams;
 
-		private ToggleRecentAppsButtonListener mListener;
+		private ToggleCopyAndTranslateButtonListener mListener;
 		private boolean mVisible;
 
-		public ToggleRecentAppsButton(Context context) {
+		public ToggleCopyAndTranslateButton(Context context) {
 			mContext = context;
 			mWindowManager = (WindowManager) context
 					.getSystemService(Context.WINDOW_SERVICE);
@@ -275,7 +275,7 @@ public class UpdateService extends Service implements ICountService,
 			return mContext;
 		}
 
-		public void setListener(ToggleRecentAppsButtonListener listener) {
+		public void setListener(ToggleCopyAndTranslateButtonListener listener) {
 			mListener = listener;
 		}
 
@@ -355,11 +355,11 @@ public class UpdateService extends Service implements ICountService,
 		}
 	}
 
-	public interface ToggleRecentAppsButtonListener {
+	public interface ToggleCopyAndTranslateButtonListener {
 
-		public void onShow(ToggleRecentAppsButton overlay);
+		public void onShow(ToggleCopyAndTranslateButton overlay);
 
-		public void onHide(ToggleRecentAppsButton overlay);
+		public void onHide(ToggleCopyAndTranslateButton overlay);
 	}
 
 	public static class SilentFrameLayout extends FrameLayout {
