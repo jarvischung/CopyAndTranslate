@@ -34,8 +34,9 @@ public class CopyAndTranslateActivity extends Activity {
 	private String text = "Hello!!";
 	private boolean isRunService = false;
 
-	public static String defaultSDCardPath = "/sdcard/copyandtranslate/langdao/";
-	public static String defaultDictName = "langdao_ec_gb";
+	public static String defaultAssetsName = "oxford";//"21dict";//"langdao";
+	public static String defaultSDCardPath = "/sdcard/copyandtranslate/oxford/";//"/sdcard/copyandtranslate/langdao/";
+	public static String defaultDictName = "oxford-big5";//"langdao_ec_gb";
 
 	private ICountService countService;
 
@@ -53,7 +54,7 @@ public class CopyAndTranslateActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				if (!isRunService) {
+				/*if (!isRunService) {
 					Intent intent2 = new Intent(CopyAndTranslateActivity.this,
 							UpdateService.class);
 					bindService(intent2, serviceConnection,
@@ -62,7 +63,7 @@ public class CopyAndTranslateActivity extends Activity {
 				} else {
 					unbindService(serviceConnection);
 					isRunService = false;
-				}
+				}*/
 
 				copyAssetsToSD();
 			}
@@ -79,7 +80,7 @@ public class CopyAndTranslateActivity extends Activity {
 		AssetManager assetManager = getAssets();
 		String[] files = null;
 		try {
-			files = assetManager.list("langdao");
+			files = assetManager.list(defaultAssetsName);
 			File f = new File(defaultSDCardPath);
 			f.mkdirs();
 		} catch (Exception e) {
@@ -93,7 +94,7 @@ public class CopyAndTranslateActivity extends Activity {
 				if (new File(defaultSDCardPath + filename).exists())
 					continue;
 
-				in = assetManager.open("langdao/" + filename);
+				in = assetManager.open(defaultAssetsName + "/" + filename);
 				out = new FileOutputStream(defaultSDCardPath + filename);
 				copyFile(in, out);
 				in.close();
@@ -137,12 +138,16 @@ public class CopyAndTranslateActivity extends Activity {
 		
 		Intent intent2 = new Intent("com.imrd.copy.action.clean");
 		PendingIntent pIntentClean = PendingIntent.getBroadcast(this, 0, intent2, 0);
+		
+		Intent intent3 = new Intent("com.imrd.copy.action.speech");
+		PendingIntent pIntentSpeech = PendingIntent.getBroadcast(this, 0, intent3, 0);
 
 		Notification noti = new Notification.Builder(this)
 				.setContentTitle("CopyAndTranslate").setContentText("Subject")
 				.setSmallIcon(R.drawable.ic_launcher).setContentIntent(pIntentStart)
 				.addAction(R.drawable.ic_launcher, "Start", pIntentStart)
-				.addAction(R.drawable.ic_launcher, "Clean", pIntentClean).build();
+				.addAction(R.drawable.ic_launcher, "Clean", pIntentClean)
+				.addAction(R.drawable.ic_launcher, "Speech", pIntentSpeech).build();
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
 		noti.flags |= Notification.FLAG_NO_CLEAR;

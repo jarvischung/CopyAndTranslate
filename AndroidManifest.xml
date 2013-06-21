@@ -33,6 +33,7 @@
 		    <intent-filter>  
 		        <action android:name="com.imrd.copy.action.start"/>
 		        <action android:name="com.imrd.copy.action.clean"/>
+		        <action android:name="com.imrd.copy.action.speech"/>
 		    </intent-filter>  
 		</receiver>
         

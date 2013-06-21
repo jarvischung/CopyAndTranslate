@@ -1,5 +1,7 @@
 package com.imrd.copy.service;
 
+import java.util.Locale;
+
 import com.imrd.copy.R;
 import com.imrd.copy.translate.Google;
 import com.imrd.copy.translate.TranslateClient;
@@ -19,6 +21,8 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
@@ -37,9 +41,11 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
 public class UpdateService extends Service implements ICountService,
-		TranslateAware {
+		TranslateAware, OnInitListener {
 
 	public static final String TAG = UpdateService.class.getSimpleName();
+	
+	public static boolean isSpeech = false;
 
 	private ToggleCopyAndTranslateButton mToggleOverlay;
 	private int count;
@@ -55,6 +61,8 @@ public class UpdateService extends Service implements ICountService,
 
 	private TranslateClient transClient;
 	private int mScaleButtonEntryPosition[] = new int[4];
+	
+	private TextToSpeech tts;
 
 	@Override
 	public void onCreate() {
@@ -62,6 +70,7 @@ public class UpdateService extends Service implements ICountService,
 		Log.d(TAG, "onStartService()");
 
 		transClient = TranslateClient.newInstance();
+		tts = new TextToSpeech(this, this);
 
 		cm = (ClipboardManager) this.getSystemService(CLIPBOARD_SERVICE);
 		cm.addPrimaryClipChangedListener(mPrimaryChangeListener);
@@ -106,7 +115,13 @@ public class UpdateService extends Service implements ICountService,
 	public void onDestroy() {
 		mToggleOverlay.hide();
 		cm.removePrimaryClipChangedListener(mPrimaryChangeListener);
-
+		
+		//Close tts
+		if (tts != null) {
+	        tts.stop();
+	        tts.shutdown();
+	    }
+		
 		super.onDestroy();
 	}
 	
@@ -134,6 +149,8 @@ public class UpdateService extends Service implements ICountService,
 			String nowWord = "";
 			try {
 				nowWord = cd.getItemAt(0).getText().toString();
+				if(isSpeech)
+					tts.speak(nowWord, TextToSpeech.QUEUE_FLUSH, null);
 			} catch (Exception e) {
 				nowWord = "";
 			}
@@ -146,7 +163,7 @@ public class UpdateService extends Service implements ICountService,
 			if (!TextUtils.isEmpty(nowWord)) {
 				beforeWord = nowWord;
 
-				if (isNetOpen(UpdateService.this)) {
+				if (!isNetOpen(UpdateService.this)) {
 					transClient.requestTranslate(nowWord, UpdateService.this);
 				} else {
 					transClient.requestTranslateLocal(nowWord,
@@ -413,5 +430,22 @@ public class UpdateService extends Service implements ICountService,
 
 		serviceUIUpdated.sendMessage(serviceUIUpdated.obtainMessage(1, transobj));
 
+	}
+
+	@Override
+	public void onInit(int status) {
+		if (status == TextToSpeech.SUCCESS) { 
+	        int result = tts.setLanguage(Locale.US);
+	        if (result == TextToSpeech.LANG_MISSING_DATA 
+	                 || result == TextToSpeech.LANG_NOT_SUPPORTED) { 
+	        	LogProcessUtil.LogPushD(TAG, "This Language is not supported"); 
+	        } else {
+	            tts.setPitch((float) 0.5);
+	            tts.setSpeechRate((float) 0.5);
+	        } 
+	    } else { 
+	    	LogProcessUtil.LogPushD(TAG, "Initilization Failed!"); 
+	    } 
+		
 	}
 }

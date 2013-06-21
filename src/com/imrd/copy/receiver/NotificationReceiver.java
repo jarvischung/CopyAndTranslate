@@ -35,6 +35,9 @@ public class NotificationReceiver extends BroadcastReceiver {
 			Intent intent2 = new Intent(context,
 					UpdateService.class);
 			context.stopService(intent2);
+		} else if (action.equals("com.imrd.copy.action.speech")) {
+			LogProcessUtil.LogPushD("", "Pressed Speech");
+			UpdateService.isSpeech = !UpdateService.isSpeech;
 		}
 	}
 	
