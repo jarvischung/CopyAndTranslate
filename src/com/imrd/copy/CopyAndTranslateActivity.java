@@ -32,7 +32,7 @@ public class CopyAndTranslateActivity extends Activity {
 	private String sourceLang = "en";
 	private String desLang = "zh-TW";
 	private String text = "Hello!!";
-	private boolean isRunService = false;
+	public static boolean isRunService = false;
 
 	public static String defaultAssetsName = "oxford";//"21dict";//"langdao";
 	public static String defaultSDCardPath = "/sdcard/copyandtranslate/oxford/";//"/sdcard/copyandtranslate/langdao/";
@@ -150,7 +150,9 @@ public class CopyAndTranslateActivity extends Activity {
 				.addAction(R.drawable.ic_launcher, "Speech", pIntentSpeech).build();
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-		noti.flags |= Notification.FLAG_NO_CLEAR;
+		noti.flags |= Notification.FLAG_NO_CLEAR 
+				| Notification.FLAG_ONLY_ALERT_ONCE
+				| Notification.FLAG_FOREGROUND_SERVICE;
 
 		notificationManager.notify(0, noti);
 	}
