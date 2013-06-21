@@ -1,5 +1,6 @@
 package com.imrd.copy.service;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 import com.imrd.copy.R;
@@ -62,7 +63,9 @@ public class UpdateService extends Service implements ICountService,
 	private TranslateClient transClient;
 	private int mScaleButtonEntryPosition[] = new int[4];
 	
+	private ArrayList arrayDictList;
 	private TextToSpeech tts;
+	private int dictSelectIndex = -1;
 
 	@Override
 	public void onCreate() {
@@ -100,6 +103,7 @@ public class UpdateService extends Service implements ICountService,
 		});
 		mCopyText = (EditText) mToggleOverlay.findViewById(R.id.copy_text);
 		mCopyText.setEnabled(true);
+		mCopyText.setKeyListener(null);
 		mCopyText.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -107,7 +111,7 @@ public class UpdateService extends Service implements ICountService,
 			}
 		});
 
-		//mCopyText.setOnTouchListener(mOnTouchListener);
+		mCopyText.setOnTouchListener(mOnTouchListener);
 		mToggleOverlay.show();
 	}
 	
@@ -186,8 +190,9 @@ public class UpdateService extends Service implements ICountService,
 			super.handleMessage(msg);
 
 			String text = "";
-			if (msg.obj instanceof String) {
-				text = (String) msg.obj;
+			if (msg.obj instanceof ArrayList) {
+				arrayDictList = (ArrayList) msg.obj;
+				text = (String) arrayDictList.get(0);
 			} else if (msg.obj instanceof Google) {
 				Google model = (Google) msg.obj;
 				text = model.sentences.get(0).trans;
@@ -235,7 +240,7 @@ public class UpdateService extends Service implements ICountService,
 				double sizeInY = Math.abs(downYValue - currentY);
 				if (sizeInX > sizeInY) {
 					// you better swipe horizontally
-					LogProcessUtil.LogPushD(TAG, "Horizontally");
+					/*LogProcessUtil.LogPushD(TAG, "Horizontally");
 
 					if (downXValue < currentX) {
 						LogProcessUtil.LogPushD(TAG, "Right");
@@ -244,17 +249,27 @@ public class UpdateService extends Service implements ICountService,
 					if (downXValue > currentX) {
 						LogProcessUtil.LogPushD(TAG, "Left");
 						layout.width = layout.width + 30;
-					}
+					}*/
 				} else {
 					// you better swipe vertically
 					LogProcessUtil.LogPushD(TAG, "Vertically");
 					if (downXValue < currentX) {
 						LogProcessUtil.LogPushD(TAG, "Down");
-						layout.height = layout.height + 30;
+						//layout.height = layout.height + 30;
+						try{
+							mCopyText.setText( (String) arrayDictList.get(dictSelectIndex--) );
+						}catch(Exception e){
+							dictSelectIndex = 0;
+						}
 					}
 					if (downXValue > currentX) {
 						LogProcessUtil.LogPushD(TAG, "Up");
-						layout.height = layout.height - 30;
+						//layout.height = layout.height - 30;
+						try{
+							mCopyText.setText( (String) arrayDictList.get(dictSelectIndex++) );
+						}catch(Exception e){
+							dictSelectIndex = 2;
+						}
 					}
 				}
 

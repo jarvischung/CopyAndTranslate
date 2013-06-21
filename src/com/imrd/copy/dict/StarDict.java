@@ -50,8 +50,8 @@ public class StarDict {
 	String dictname;
 	public String last_error = "";
 
-	public StarDict() {
-		this(CopyAndTranslateActivity.defaultSDCardPath + CopyAndTranslateActivity.defaultDictName);
+	public StarDict(int select) {
+		this(CopyAndTranslateActivity.defaultSDCardPath[select] + CopyAndTranslateActivity.defaultDictName[select]);
 		//this("/data/data/com.imrd.copy/files/langdao/langdao_ec_gb");
 	}
 

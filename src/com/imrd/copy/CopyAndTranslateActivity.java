@@ -34,9 +34,10 @@ public class CopyAndTranslateActivity extends Activity {
 	private String text = "Hello!!";
 	public static boolean isRunService = false;
 
-	public static String defaultAssetsName = "oxford";//"21dict";//"langdao";
-	public static String defaultSDCardPath = "/sdcard/copyandtranslate/oxford/";//"/sdcard/copyandtranslate/langdao/";
-	public static String defaultDictName = "oxford-big5";//"langdao_ec_gb";
+	public static String[] defaultAssetsName = {"oxford","21dict","langdao"};
+	public static String[] defaultSDCardPath = {"/sdcard/copyandtranslate/oxford/", "/sdcard/copyandtranslate/21dict/", "/sdcard/copyandtranslate/langdao/"};
+	public static String[] defaultDictName = {"oxford-big5", "21shijishuangxiangcidian-big5", "langdao_ec_gb"};
+	public static int totalDictionary = defaultAssetsName.length;
 
 	private ICountService countService;
 
@@ -78,34 +79,36 @@ public class CopyAndTranslateActivity extends Activity {
 
 	private void copyAssetsToSD() {
 		AssetManager assetManager = getAssets();
-		String[] files = null;
-		try {
-			files = assetManager.list(defaultAssetsName);
-			File f = new File(defaultSDCardPath);
-			f.mkdirs();
-		} catch (Exception e) {
-			LogProcessUtil.LogPushD(TAG, "Failed to get asset file list.");
-			e.printStackTrace();
-		}
-		for (String filename : files) {
-			InputStream in = null;
-			OutputStream out = null;
+		for(int i=0;i<=defaultAssetsName.length;i++){
+			String[] files = null;
 			try {
-				if (new File(defaultSDCardPath + filename).exists())
-					continue;
-
-				in = assetManager.open(defaultAssetsName + "/" + filename);
-				out = new FileOutputStream(defaultSDCardPath + filename);
-				copyFile(in, out);
-				in.close();
-				in = null;
-				out.flush();
-				out.close();
-				out = null;
-			} catch (IOException e) {
-				LogProcessUtil.LogPushD(TAG, "Failed to copy asset file: "
-						+ filename);
+				files = assetManager.list(defaultAssetsName[i]);
+				File f = new File(defaultSDCardPath[i]);
+				f.mkdirs();
+			} catch (Exception e) {
+				LogProcessUtil.LogPushD(TAG, "Failed to get asset file list.");
 				e.printStackTrace();
+			}
+			for (String filename : files) {
+				InputStream in = null;
+				OutputStream out = null;
+				try {
+					if (new File(defaultSDCardPath[i] + filename).exists())
+						continue;
+	
+					in = assetManager.open(defaultAssetsName[i] + "/" + filename);
+					out = new FileOutputStream(defaultSDCardPath[i] + filename);
+					copyFile(in, out);
+					in.close();
+					in = null;
+					out.flush();
+					out.close();
+					out = null;
+				} catch (IOException e) {
+					LogProcessUtil.LogPushD(TAG, "Failed to copy asset file: "
+							+ filename);
+					e.printStackTrace();
+				}
 			}
 		}
 	}

@@ -2,10 +2,12 @@ package com.imrd.copy.translate;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 
 import android.util.Log;
 
 import com.google.gson.GsonBuilder;
+import com.imrd.copy.CopyAndTranslateActivity;
 import com.imrd.copy.dict.StarDict;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -66,7 +68,12 @@ public class TranslateClient {
 	
 	public void requestTranslateLocal(String text, final TranslateAware callback){
 		
-		callback.receiveTranslateText(new StarDict().getExplanation2(text));
+		ArrayList<String> textArray = new ArrayList<String>();
+		
+		for(int i=0;i<CopyAndTranslateActivity.totalDictionary;i++)
+			textArray.add(new StarDict(i).getExplanation2(text));
+		
+		callback.receiveTranslateText(textArray);
 		
 	}
 	
