@@ -29,7 +29,7 @@
         </activity>
         
         <receiver android:name="com.imrd.copy.receiver.NotificationReceiver"
-            android:exported="true">
+            android:exported="false">
 		    <intent-filter>  
 		        <action android:name="com.imrd.copy.action.start"/>
 		        <action android:name="com.imrd.copy.action.clean"/>
