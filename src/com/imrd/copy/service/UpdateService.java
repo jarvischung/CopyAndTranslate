@@ -88,7 +88,7 @@ public class UpdateService extends Service implements ICountService,
 		mToggleOverlay = new ToggleCopyAndTranslateButton(UpdateService.this);
 		mToggleOverlay.setContentView(R.layout.copy);
 		mScaleButton = (ImageButton) mToggleOverlay.findViewById(R.id.scale_button);
-		getScaleButtonPosition();
+		//getScaleButtonPosition();
 		mScaleButton.setOnClickListener(new OnClickListener() {
 
 			@Override

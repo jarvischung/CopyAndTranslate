@@ -79,7 +79,7 @@ public class CopyAndTranslateActivity extends Activity {
 
 	private void copyAssetsToSD() {
 		AssetManager assetManager = getAssets();
-		for(int i=0;i<=defaultAssetsName.length;i++){
+		for(int i=0;i<=defaultAssetsName.length-1;i++){
 			String[] files = null;
 			try {
 				files = assetManager.list(defaultAssetsName[i]);

@@ -16,7 +16,6 @@
   		android:layout_height="wrap_content"
   		android:layout_toRightOf="@id/scale_button"
   		android:gravity="top"
-  		android:maxWidth="100dp"
   		android:textColor="#000000"
   		android:background="#bbffffff"/>
 </RelativeLayout>
