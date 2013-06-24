@@ -1,6 +1,7 @@
 package com.imrd.copy.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import com.imrd.copy.R;
@@ -23,6 +24,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.EngineInfo;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.TextUtils;
 import android.util.Log;
@@ -153,6 +155,11 @@ public class UpdateService extends Service implements ICountService,
 			String nowWord = "";
 			try {
 				nowWord = cd.getItemAt(0).getText().toString();
+				/*List<EngineInfo> list = tts.getEngines();
+				for(EngineInfo engInfo : list){
+					LogProcessUtil.LogPushD(TAG, "engInfo:" + engInfo.name);
+				}*/
+				tts.setEngineByPackageName("com.google.android.tts");
 				if(isSpeech)
 					tts.speak(nowWord, TextToSpeech.QUEUE_FLUSH, null);
 			} catch (Exception e) {
@@ -455,8 +462,8 @@ public class UpdateService extends Service implements ICountService,
 	                 || result == TextToSpeech.LANG_NOT_SUPPORTED) { 
 	        	LogProcessUtil.LogPushD(TAG, "This Language is not supported"); 
 	        } else {
-	            tts.setPitch((float) 0.5);
-	            tts.setSpeechRate((float) 0.5);
+	            //tts.setPitch((float) 0.5);
+	            //tts.setSpeechRate((float) 0.5);
 	        } 
 	    } else { 
 	    	LogProcessUtil.LogPushD(TAG, "Initilization Failed!"); 
