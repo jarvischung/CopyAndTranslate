@@ -59,8 +59,8 @@ public class TranslateClient {
 			    }
 			});
 			
-		} catch (UnsupportedEncodingException e) {
-			Log.w(TAG, "bad request: "+e.getMessage());
+		} catch(Exception e){
+			Log.w(TAG, "timeout: "+e.getMessage());
 			requestTranslateLocal(text, callback);
 		}
 		
@@ -70,7 +70,7 @@ public class TranslateClient {
 		
 		ArrayList<String> textArray = new ArrayList<String>();
 		
-		for(int i=0;i<CopyAndTranslateActivity.totalDictionary;i++)
+		for(int i=1;i<CopyAndTranslateActivity.totalDictionary;i++)
 			textArray.add(new StarDict(i).getExplanation2(text));
 		
 		callback.receiveTranslateText(textArray);

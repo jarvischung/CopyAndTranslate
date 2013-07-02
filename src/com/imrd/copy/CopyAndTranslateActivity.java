@@ -8,11 +8,13 @@ import java.io.OutputStream;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.AssetManager;
@@ -34,10 +36,11 @@ public class CopyAndTranslateActivity extends Activity {
 	private String text = "Hello!!";
 	public static boolean isRunService = false;
 
-	public static String[] defaultAssetsName = {"oxford","21dict","langdao"};
-	public static String[] defaultSDCardPath = {"/sdcard/copyandtranslate/oxford/", "/sdcard/copyandtranslate/21dict/", "/sdcard/copyandtranslate/langdao/"};
-	public static String[] defaultDictName = {"oxford-big5", "21shijishuangxiangcidian-big5", "langdao_ec_gb"};
+	public static String[] defaultAssetsName = {"google", "oxford","21dict","langdao"};
+	public static String[] defaultSDCardPath = {"google", "/sdcard/copyandtranslate/oxford/", "/sdcard/copyandtranslate/21dict/", "/sdcard/copyandtranslate/langdao/"};
+	public static String[] defaultDictName = {"google", "oxford-big5", "21shijishuangxiangcidian-big5", "langdao_ec_gb"};
 	public static int totalDictionary = defaultAssetsName.length;
+	public static int dictionaryIndex = 0;
 
 	private ICountService countService;
 
@@ -79,7 +82,7 @@ public class CopyAndTranslateActivity extends Activity {
 
 	private void copyAssetsToSD() {
 		AssetManager assetManager = getAssets();
-		for(int i=0;i<=defaultAssetsName.length-1;i++){
+		for(int i=1;i<=defaultAssetsName.length-1;i++){
 			String[] files = null;
 			try {
 				files = assetManager.list(defaultAssetsName[i]);
@@ -139,17 +142,18 @@ public class CopyAndTranslateActivity extends Activity {
 		Intent intent = new Intent("com.imrd.copy.action.start");
 		PendingIntent pIntentStart = PendingIntent.getBroadcast(this, 0, intent, 0);
 		
-		Intent intent2 = new Intent("com.imrd.copy.action.clean");
-		PendingIntent pIntentClean = PendingIntent.getBroadcast(this, 0, intent2, 0);
+		Intent intent2 = new Intent(this, ChooseDictionaryActivity.class);
+		intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		PendingIntent pIntentChoose = PendingIntent.getActivity(this, 0, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
 		
 		Intent intent3 = new Intent("com.imrd.copy.action.speech");
 		PendingIntent pIntentSpeech = PendingIntent.getBroadcast(this, 0, intent3, 0);
 
 		Notification noti = new Notification.Builder(this)
-				.setContentTitle("CopyAndTranslate").setContentText("Subject")
+				.setContentTitle("CopyAndTranslate").setContentText("Tap to start.")
 				.setSmallIcon(R.drawable.ic_launcher).setContentIntent(pIntentStart)
-				.addAction(R.drawable.ic_launcher, "Start", pIntentStart)
-				.addAction(R.drawable.ic_launcher, "Clean", pIntentClean)
+				//.addAction(R.drawable.ic_launcher, "Start", pIntentStart)
+				.addAction(R.drawable.ic_launcher, "Choose", pIntentChoose)
 				.addAction(R.drawable.ic_launcher, "Speech", pIntentSpeech).build();
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 

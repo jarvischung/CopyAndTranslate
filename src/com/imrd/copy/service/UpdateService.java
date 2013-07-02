@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.imrd.copy.CopyAndTranslateActivity;
 import com.imrd.copy.R;
 import com.imrd.copy.translate.Google;
 import com.imrd.copy.translate.TranslateClient;
@@ -174,9 +175,10 @@ public class UpdateService extends Service implements ICountService,
 			if (!TextUtils.isEmpty(nowWord)) {
 				beforeWord = nowWord;
 
-				if (!isNetOpen(UpdateService.this)) {
+				if (isNetOpen(UpdateService.this) && CopyAndTranslateActivity.dictionaryIndex==0) {
 					transClient.requestTranslate(nowWord, UpdateService.this);
 				} else {
+					CopyAndTranslateActivity.dictionaryIndex = 1;
 					transClient.requestTranslateLocal(nowWord,
 							UpdateService.this);
 				}
@@ -199,7 +201,7 @@ public class UpdateService extends Service implements ICountService,
 			String text = "";
 			if (msg.obj instanceof ArrayList) {
 				arrayDictList = (ArrayList) msg.obj;
-				text = (String) arrayDictList.get(0);
+				text = (String) arrayDictList.get(CopyAndTranslateActivity.dictionaryIndex-1);
 			} else if (msg.obj instanceof Google) {
 				Google model = (Google) msg.obj;
 				text = model.sentences.get(0).trans;

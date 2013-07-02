@@ -28,11 +28,16 @@
             </intent-filter>
         </activity>
         
+        <activity
+            android:name=".ChooseDictionaryActivity"
+            android:theme="@android:style/Theme.Dialog">
+        </activity>
+        
         <receiver android:name="com.imrd.copy.receiver.NotificationReceiver"
             android:exported="false">
 		    <intent-filter>  
 		        <action android:name="com.imrd.copy.action.start"/>
-		        <action android:name="com.imrd.copy.action.clean"/>
+		        <!-- action android:name="com.imrd.copy.action.choose"/-->
 		        <action android:name="com.imrd.copy.action.speech"/>
 		    </intent-filter>  
 		</receiver>

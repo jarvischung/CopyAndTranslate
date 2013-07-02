@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+    
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:text="Please choose your dictionary"/>
+
+    <RadioGroup
+        android:id="@+id/myRadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <RadioButton
+            android:id="@+id/dict_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Google"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/dict_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="oxford" />
+        
+        <RadioButton
+            android:id="@+id/dict_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="21dict" />
+        
+        <RadioButton
+            android:id="@+id/dict_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="langdao" />
+    </RadioGroup>
+
+</LinearLayout>
