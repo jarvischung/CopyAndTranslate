@@ -41,5 +41,11 @@
             android:layout_height="wrap_content"
             android:text="langdao" />
     </RadioGroup>
+    
+    <LinearLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"/>
 
 </LinearLayout>

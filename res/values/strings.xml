@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">CopyAndTranslate</string>
+    <string name="app_name">CopyAndTranslate+</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="hello_world">Click to copy</string>
     <string name="translate_url">http://translate.google.com/translate_a/t?client=t&amp;ie=UTF-8&amp;oe=UTF-8&amp;sl=%1$s&amp;tl=%2$s&amp;text=%3$s</string>
 
 </resources>

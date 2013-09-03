@@ -1,14 +1,20 @@
 package com.imrd.copy;
 
+import com.google.ads.AdRequest;
+import com.google.ads.AdSize;
+import com.google.ads.AdView;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.RadioButton;
 
 public class ChooseDictionaryActivity extends Activity {
 
 	private static int radioAry[] = {R.id.dict_1,R.id.dict_2,R.id.dict_3,R.id.dict_4};
+	private AdView adView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +27,11 @@ public class ChooseDictionaryActivity extends Activity {
 		myRadioGroup.setOnCheckedChangeListener(chooseDictionary);
 		
 		((RadioButton)findViewById(radioAry[CopyAndTranslateActivity.dictionaryIndex])).setChecked(true);
+		
+		adView = new AdView(this, AdSize.BANNER, "a152259b72bab65");
+		LinearLayout layout = (LinearLayout)findViewById(R.id.mainLayout);
+		layout.addView(adView);
+		adView.loadAd(new AdRequest());
 		
 	}
 

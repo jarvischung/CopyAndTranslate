@@ -22,7 +22,11 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
+import com.google.ads.AdRequest;
+import com.google.ads.AdSize;
+import com.google.ads.AdView;
 import com.imrd.copy.dict.StarDict;
 import com.imrd.copy.service.ICountService;
 import com.imrd.copy.service.UpdateService;
@@ -43,11 +47,21 @@ public class CopyAndTranslateActivity extends Activity {
 	public static int dictionaryIndex = 0;
 
 	private ICountService countService;
+	
+	private AdView adView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_copy);
+		
+		adView = new AdView(this, AdSize.BANNER, "a152259b72bab65");
+
+		LinearLayout layout = (LinearLayout)findViewById(R.id.mainLayout);
+
+		layout.addView(adView);
+
+		adView.loadAd(new AdRequest());
 		
 		final Intent intent = new Intent(CopyAndTranslateActivity.this,
 				UpdateService.class);
